@@ -25,31 +25,37 @@ pub fn read_clean_file(input:&str) -> Result<(), Box<dyn std::error::Error>>{
         let mut col_fields: Vec<String> = record.iter().map(String::from).collect();
         col_fields.remove(0); //remove T25 col
         let value_str = col_fields[3].replace("\"", "").replace(",", "");
+
+        //check if the value is numeric
+        if value_str.chars().all(|c| c.is_digit(10)) {
+            //if it's a valid numeric string, parse the number as usize
             match value_str.parse::<usize>() {
                 Ok(value) => {
-                    // Update the value in the column fields
                     col_fields[3] = value.to_string();
-                    wtr.write_record(&col_fields)?;
-                }
+                    }
                 Err(e) => {
                     println!("Error parsing value: {} - {:?}", value_str, e);
+                    }
                 }
-            }
+            } 
+            else {
+             //if it's not numeric, leave the value unchanged
+            col_fields[3] = col_fields[3].replace("\"", "").replace(",", ""); 
+        }
+
         col_fields.retain(|fields| !fields.trim().is_empty());
         if col_fields.len() == 5 {
             col_fields.push(String::new());
-            col_fields.truncate(6);
             wtr.write_record(&col_fields)?;
         }
         else if col_fields.len() == 6{
-            let swap = col_fields[4].clone();
-            col_fields[4] = col_fields[5].clone();
-            col_fields[5] = swap;
+            col_fields.swap(4, 5);
             wtr.write_record(&col_fields)?;
         }
         else{
             println!("{:?}, Error in col fields", col_fields)
         }
+        
     }
     wtr.flush()?;
     Ok(())

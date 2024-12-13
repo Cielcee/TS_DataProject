@@ -68,13 +68,13 @@ fn fit_model(country_data: &[(usize, usize)]) -> FittedLinearRegression<f64> {
     //convert to ndarray::Array2 for features and Array1 for targets
     let x = Array2::from_shape_vec((years.len(), 1), years)
         .expect("Failed to create feature matrix");
-    let y = Array1::from_vec(values); // Targets as a 1D array
+    let y = Array1::from_vec(values); 
     //create a dataset
     let dataset = Dataset::new(x, y);
     //fit the model
     let lin_reg = LinearRegression::new();
     let model = lin_reg.fit(&dataset).expect("Failed to fit linear regression model");
-    //calculate mean absolute error (optional)
+    //calculate mean absolute error 
     let predictions = model.predict(&dataset);
     let loss = (dataset.targets() - predictions)
         .mapv(f64::abs)
@@ -114,6 +114,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     io::stdin().read_line(&mut species_input).expect("Failed to read line");
     let species_input = species_input.trim();
 
+    println!("Enter the number of years to predict: ");
+    let mut years_input = String::new();
+    io::stdin().read_line(&mut years_input).expect("Failed to read line");
+    let n: usize = years_input.trim().parse().unwrap_or(10); //default to 10 if input is invalid
+
     if let Some(country_data) = data.get(country_input) {
         if let Some(species_data) = country_data.get(species_input) {
             println!("Data for {} ({}) species: {:?}", country_input, species_input, species_data);
@@ -121,7 +126,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let model = fit_model(species_data);
             let last_year = species_data.iter().map(|&(year, _)| year).max().unwrap();
 
-            let predictions = predict_next_years(&model, last_year, 10);
+            let predictions = predict_next_years(&model, last_year, n);
             for (year, predicted) in predictions {
                 println!(
                     "Predicted numbers of threatened species ({}) for {} in year {}: {:.2}",
@@ -157,7 +162,7 @@ fn create_mock_csv(path: &str) {
     )
     .expect("Unable to write mock CSV data");
 }
-// Test module
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -167,24 +172,21 @@ mod tests {
         // Create a temporary mock CSV file
         let mock_csv_path = "test_mock_data.csv";
         create_mock_csv(mock_csv_path);
-    
-        // Read the mock data
         let data_test = read_data(mock_csv_path).unwrap();
-    
-        // Check if the data contains "Zambia"
         assert!(
             data_test.contains_key("Zambia"),
             "Expected data to contain key 'Zambia'"
         );
-    
-        // Optionally, validate the number of entries
         if let Some(zambia_data) = data_test.get("Zambia") {
-            assert_eq!(zambia_data.len(), 7, "Expected 7 entries for Zambia");
-        } else {
+            assert!(zambia_data.contains_key("Total"), "Expected data to contain 'Total' species for Zambia");
+        
+            // Get the vector of data for the "Total" species and check its length
+            let total_data = zambia_data.get("Total").unwrap();
+            assert_eq!(total_data.len(), 7, "Expected 7 entries for Zambia's 'Total' species");
+        } 
+        else {
             panic!("Data for Zambia was not found");
         }
-    
-        // Clean up the mock file after the test
         std::fs::remove_file(mock_csv_path).expect("Failed to remove mock CSV file");
     }
 
