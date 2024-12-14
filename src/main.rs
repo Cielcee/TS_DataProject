@@ -122,7 +122,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if let Some(country_data) = data.get(country_input) {
         if let Some(species_data) = country_data.get(species_input) {
             println!("Data for {} ({}) species: {:?}", country_input, species_input, species_data);
-            // Fit the model using the species data
+
             let model = fit_model(species_data);
             let last_year = species_data.iter().map(|&(year, _)| year).max().unwrap();
 
@@ -169,7 +169,7 @@ mod tests {
 
     #[test]
     fn test_read_data_total() {
-        // Create a temporary mock CSV file
+
         let mock_csv_path = "test_mock_data.csv";
         create_mock_csv(mock_csv_path);
         let data_test = read_data(mock_csv_path).unwrap();
@@ -180,7 +180,6 @@ mod tests {
         if let Some(zambia_data) = data_test.get("Zambia") {
             assert!(zambia_data.contains_key("Total"), "Expected data to contain 'Total' species for Zambia");
         
-            // Get the vector of data for the "Total" species and check its length
             let total_data = zambia_data.get("Total").unwrap();
             assert_eq!(total_data.len(), 7, "Expected 7 entries for Zambia's 'Total' species");
         } 
