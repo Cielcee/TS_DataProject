@@ -1,7 +1,8 @@
 use csv::{ReaderBuilder, WriterBuilder};
 use std::fs::File;
+use std::error::Error;
 
-pub fn read_clean_file(input:&str) -> Result<(), Box<dyn std::error::Error>>{
+pub fn read_clean_file(input:&str) -> Result<(), Box<dyn Error>>{
     //reads the input and the supposed output
     let input_file = File::open(input)?;
     let mut rdr = ReaderBuilder::new()
